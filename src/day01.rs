@@ -1,6 +1,6 @@
-use std::io;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
+use std::{io, iter::FromIterator};
 
 use std::collections::BTreeSet;
 
@@ -18,7 +18,7 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     Ok(())
 }
 
-fn parse(input: impl BufRead) -> io::Result<BTreeSet<i32>> {
+fn parse<T: FromIterator<i32>>(input: impl BufRead) -> io::Result<T> {
     input
         .lines()
         .map(|l| {
@@ -58,6 +58,19 @@ fn part_2(expenses: &BTreeSet<i32>) -> Option<i32> {
     None
 }
 
+// With IterTools.combinations
+
+fn solve_combinations(input: &[i32], k_combinations: usize, goal: i32) -> Option<i32> {
+    use itertools::Itertools;
+
+    input
+        .iter()
+        .copied()
+        .combinations(k_combinations)
+        .find(|v| v.iter().sum::<i32>() == goal)
+        .map(|v| v.iter().product::<i32>())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,5 +88,35 @@ mod tests {
         let expenses = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
 
         b.iter(|| part_2(&expenses));
+    }
+
+    #[test]
+    fn part_1_equiv_comb() {
+        let expenses_set = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+        let expenses_vec: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+
+        assert!(part_1(&expenses_set) == solve_combinations(&expenses_vec, 2, 2020));
+    }
+
+    #[test]
+    fn part_2_equiv_comb() {
+        let expenses_set = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+        let expenses_vec: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+
+        assert!(part_2(&expenses_set) == solve_combinations(&expenses_vec, 3, 2020));
+    }
+
+    #[bench]
+    fn bench_part_1_comb(b: &mut Bencher) {
+        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+
+        b.iter(|| solve_combinations(&expenses, 2, 2020));
+    }
+
+    #[bench]
+    fn bench_part_2_comb(b: &mut Bencher) {
+        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+
+        b.iter(|| solve_combinations(&expenses, 3, 2020));
     }
 }
