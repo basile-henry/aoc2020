@@ -78,16 +78,23 @@ mod tests {
 
     #[bench]
     fn bench_part_1(b: &mut Bencher) {
-        let expenses = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
 
-        b.iter(|| part_1(&expenses));
+        b.iter(|| {
+            let expenses = expenses.iter().copied().collect();
+            part_1(&expenses)
+        });
     }
 
     #[bench]
     fn bench_part_2(b: &mut Bencher) {
-        let expenses = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
 
-        b.iter(|| part_2(&expenses));
+        b.iter(|| {
+            let expenses = expenses.iter().copied().collect();
+
+            part_2(&expenses)
+        });
     }
 
     #[test]
