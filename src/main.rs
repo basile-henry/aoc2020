@@ -1,7 +1,9 @@
-use std::fs::File;
+#![feature(test)]
+
+extern crate test;
+
 use std::io;
 use std::io::prelude::*;
-use std::io::BufReader;
 use structopt::StructOpt;
 
 mod day01;
@@ -18,12 +20,11 @@ struct Opt {
 fn main() -> io::Result<()> {
     let opt = Opt::from_args();
 
-    let input_path = format!("input/day_{:0>2}/part_{}.txt", opt.day, opt.part);
     let stdin = io::stdin();
     let input: Box<dyn BufRead> = if opt.stdin {
         Box::new(stdin.lock())
     } else {
-        Box::new(BufReader::new(File::open(input_path)?))
+        Box::new(aoc2020::input_file(opt.day, opt.part)?)
     };
 
     match opt.day {
