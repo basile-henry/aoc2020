@@ -2,7 +2,6 @@ use std::io;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
 
-use std::collections::BTreeMap;
 use std::ops::BitXor;
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
@@ -52,24 +51,14 @@ fn parse(input: impl BufRead) -> io::Result<Vec<(Rule, Password)>> {
         .collect()
 }
 
-fn char_count(password: &Password) -> BTreeMap<u8, u8> {
-    let mut count = BTreeMap::new();
-
-    for &c in password {
-        let entry = count.entry(c).or_insert(0);
-        *entry += 1;
-    }
-
-    count
+fn char_count(char: u8, password: &Password) -> usize {
+    password.iter().filter(|&&c| c == char).count()
 }
 
 fn valid_part_1(rule: &Rule, password: &Password) -> bool {
-    let char_counts = char_count(password);
+    let count = char_count(rule.char, password) as u8;
 
-    match char_counts.get(&rule.char) {
-        Some(&count) => rule.min <= count && count <= rule.max,
-        None => false,
-    }
+    rule.min <= count && count <= rule.max
 }
 
 fn count_valid<F>(passwords: &[(Rule, Password)], valid: F) -> usize
