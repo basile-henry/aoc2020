@@ -1,4 +1,6 @@
 #![feature(test)]
+#![feature(try_blocks)]
+#![feature(str_split_once)]
 
 extern crate test;
 
@@ -7,6 +9,7 @@ use std::io::prelude::*;
 use structopt::StructOpt;
 
 mod day01;
+mod day02;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "aoc2020", about = "Basile's Advent of Code 2020")]
@@ -29,6 +32,7 @@ fn main() -> io::Result<()> {
 
     match opt.day {
         1 => day01::solve(input, opt.part)?,
+        2 => day02::solve(input, opt.part)?,
         _ => unimplemented!(),
     }
 
