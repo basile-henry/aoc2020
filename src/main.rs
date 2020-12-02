@@ -24,7 +24,7 @@ fn main() -> io::Result<()> {
     let input: Box<dyn BufRead> = if opt.stdin {
         Box::new(stdin.lock())
     } else {
-        Box::new(aoc2020::input_file(opt.day, opt.part)?)
+        Box::new(aoc2020::input_file(opt.day)?)
     };
 
     match opt.day {

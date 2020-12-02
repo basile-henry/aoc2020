@@ -60,7 +60,7 @@ fn part_2(expenses: &BTreeSet<i32>) -> Option<i32> {
 
 // With IterTools.combinations
 
-fn solve_combinations(input: &[i32], k_combinations: usize, goal: i32) -> Option<i32> {
+fn _solve_combinations(input: &[i32], k_combinations: usize, goal: i32) -> Option<i32> {
     use itertools::Itertools;
 
     input
@@ -76,9 +76,16 @@ mod tests {
     use super::*;
     use test::Bencher;
 
+    use std::fs::File;
+    use std::io::BufReader;
+
+    fn input() -> BufReader<File> {
+        aoc2020::input_file(1).unwrap()
+    }
+
     #[bench]
     fn bench_part_1(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(input()).unwrap();
 
         b.iter(|| {
             let expenses = expenses.iter().copied().collect();
@@ -88,7 +95,7 @@ mod tests {
 
     #[bench]
     fn bench_part_2(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(input()).unwrap();
 
         b.iter(|| {
             let expenses = expenses.iter().copied().collect();
@@ -99,31 +106,31 @@ mod tests {
 
     #[test]
     fn part_1_equiv_comb() {
-        let expenses_set = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
-        let expenses_vec: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+        let expenses_set = parse(input()).unwrap();
+        let expenses_vec: Vec<i32> = parse(input()).unwrap();
 
-        assert!(part_1(&expenses_set) == solve_combinations(&expenses_vec, 2, 2020));
+        assert!(part_1(&expenses_set) == _solve_combinations(&expenses_vec, 2, 2020));
     }
 
     #[test]
     fn part_2_equiv_comb() {
-        let expenses_set = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
-        let expenses_vec: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+        let expenses_set = parse(input()).unwrap();
+        let expenses_vec: Vec<i32> = parse(input()).unwrap();
 
-        assert!(part_2(&expenses_set) == solve_combinations(&expenses_vec, 3, 2020));
+        assert!(part_2(&expenses_set) == _solve_combinations(&expenses_vec, 3, 2020));
     }
 
     #[bench]
     fn bench_part_1_comb(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 1).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(input()).unwrap();
 
-        b.iter(|| solve_combinations(&expenses, 2, 2020));
+        b.iter(|| _solve_combinations(&expenses, 2, 2020));
     }
 
     #[bench]
     fn bench_part_2_comb(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(aoc2020::input_file(1, 2).unwrap()).unwrap();
+        let expenses: Vec<i32> = parse(input()).unwrap();
 
-        b.iter(|| solve_combinations(&expenses, 3, 2020));
+        b.iter(|| _solve_combinations(&expenses, 3, 2020));
     }
 }
