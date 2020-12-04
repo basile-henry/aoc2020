@@ -1,6 +1,8 @@
 #![feature(test)]
 #![feature(try_blocks)]
 #![feature(str_split_once)]
+#![feature(half_open_range_patterns)]
+#![feature(exclusive_range_pattern)]
 
 extern crate test;
 
@@ -11,6 +13,7 @@ use structopt::StructOpt;
 mod day01;
 mod day02;
 mod day03;
+mod day04;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "aoc2020", about = "Basile's Advent of Code 2020")]
@@ -35,6 +38,7 @@ fn main() -> io::Result<()> {
         1 => day01::solve(input, opt.part)?,
         2 => day02::solve(input, opt.part)?,
         3 => day03::solve(input, opt.part)?,
+        4 => day04::solve(input, opt.part)?,
         _ => unimplemented!(),
     }
 
