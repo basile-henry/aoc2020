@@ -19,16 +19,15 @@ type Seat = u16;
 
 fn parse_seat(input: &str) -> Option<Seat> {
     let mut seat = 0;
-    let mut current = 1 << (7 + 3);
 
     for &byte in input.as_bytes() {
-        current >>= 1;
+        seat <<= 1;
 
         match byte {
             b'F' => (),
-            b'B' => seat |= current,
+            b'B' => seat |= 1,
             b'L' => (),
-            b'R' => seat |= current,
+            b'R' => seat |= 1,
             _ => return None,
         }
     }
