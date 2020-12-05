@@ -1,6 +1,6 @@
+use std::io;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
-use std::{io, iter::FromIterator};
 
 use std::collections::BTreeSet;
 
@@ -18,7 +18,7 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     Ok(())
 }
 
-fn parse<T: FromIterator<i32>>(input: impl BufRead) -> io::Result<T> {
+fn parse(input: impl BufRead) -> io::Result<Vec<i32>> {
     input
         .lines()
         .map(|l| {
@@ -30,29 +30,37 @@ fn parse<T: FromIterator<i32>>(input: impl BufRead) -> io::Result<T> {
         .collect()
 }
 
-fn part_1(expenses: &BTreeSet<i32>) -> Option<i32> {
+fn part_1(expenses: &[i32]) -> Option<i32> {
+    let mut expenses_set = BTreeSet::new();
+
     for expense in expenses {
         let other = 2020 - expense;
 
         // Find answer
-        if expenses.contains(&other) {
+        if expenses_set.contains(&other) {
             return Some(expense * other);
         }
+
+        expenses_set.insert(expense);
     }
 
     None
 }
 
-fn part_2(expenses: &BTreeSet<i32>) -> Option<i32> {
-    for expense in expenses {
-        for other in expenses {
+fn part_2(expenses: &[i32]) -> Option<i32> {
+    let mut expenses_set = BTreeSet::new();
+
+    for (i, expense) in expenses.iter().enumerate() {
+        for other in expenses[i + 1..].iter() {
             let another = 2020 - expense - other;
 
             // Find answer
-            if expenses.contains(&another) {
+            if expenses_set.contains(&another) {
                 return Some(expense * other * another);
             }
         }
+
+        expenses_set.insert(expense);
     }
 
     None
@@ -85,51 +93,49 @@ mod tests {
 
     #[bench]
     fn bench_part_1(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
-        b.iter(|| {
-            let expenses = expenses.iter().copied().collect();
-            part_1(&expenses)
-        });
+        b.iter(|| part_1(&expenses));
     }
 
     #[bench]
     fn bench_part_2(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
-        b.iter(|| {
-            let expenses = expenses.iter().copied().collect();
+        b.iter(|| part_2(&expenses));
+    }
 
-            part_2(&expenses)
-        });
+    #[test]
+    fn part_1_edge_case() {
+        let expenses = vec![1010];
+
+        assert!(part_1(&expenses) == None)
     }
 
     #[test]
     fn part_1_equiv_comb() {
-        let expenses_set = parse(input()).unwrap();
-        let expenses_vec: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
-        assert!(part_1(&expenses_set) == _solve_combinations(&expenses_vec, 2, 2020));
+        assert!(part_1(&expenses) == _solve_combinations(&expenses, 2, 2020));
     }
 
     #[test]
     fn part_2_equiv_comb() {
-        let expenses_set = parse(input()).unwrap();
-        let expenses_vec: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
-        assert!(part_2(&expenses_set) == _solve_combinations(&expenses_vec, 3, 2020));
+        assert!(part_2(&expenses) == _solve_combinations(&expenses, 3, 2020));
     }
 
     #[bench]
     fn bench_part_1_comb(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
         b.iter(|| _solve_combinations(&expenses, 2, 2020));
     }
 
     #[bench]
     fn bench_part_2_comb(b: &mut Bencher) {
-        let expenses: Vec<i32> = parse(input()).unwrap();
+        let expenses = parse(input()).unwrap();
 
         b.iter(|| _solve_combinations(&expenses, 3, 2020));
     }
