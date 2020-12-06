@@ -17,10 +17,10 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
 
 type Seat = usize;
 
-fn parse_seat(input: &str) -> Option<Seat> {
+fn parse_seat(input: &[u8]) -> Option<Seat> {
     let mut seat = 0;
 
-    for &byte in input.as_bytes() {
+    for &byte in input {
         seat <<= 1;
 
         match byte {
@@ -38,7 +38,7 @@ fn parse_seat(input: &str) -> Option<Seat> {
 fn parse(input: impl BufRead) -> Option<Vec<Seat>> {
     input
         .lines()
-        .map(|l| try { parse_seat(&l.ok()?)? })
+        .map(|l| try { parse_seat(&l.ok()?.as_bytes())? })
         .collect()
 }
 
@@ -62,12 +62,14 @@ fn part_2_naive(mut seats: Vec<Seat>) -> Option<Seat> {
     None
 }
 
-fn _part_2_one_pass(seats: &[Seat]) -> Seat {
+fn _part_2_one_pass(seats: &str) -> Seat {
     let mut min = usize::MAX;
     let mut max = usize::MIN;
     let mut sum = 0;
 
-    for &seat in seats {
+    for seat in seats.as_bytes().chunks(11) {
+        let seat = parse_seat(&seat[0..10]).unwrap();
+
         min = seat.min(min);
         max = seat.max(max);
         sum += seat;
@@ -85,23 +87,32 @@ mod tests {
 
     #[bench]
     fn bench_part_2_naive(b: &mut Bencher) {
-        let seats = parse(aoc2020::input_file(5).unwrap()).unwrap();
+        let mut input = aoc2020::input_file(5).unwrap();
+        let mut input_str = String::new();
+        input.read_to_string(&mut input_str).unwrap();
 
-        b.iter(|| part_2_naive(seats.clone()));
+        b.iter(|| {
+            let input = io::Cursor::new(&input_str);
+            let seats = parse(input).unwrap();
+            part_2_naive(seats.clone())
+        });
     }
 
     #[test]
     fn part_2_equiv() {
         let seats = parse(aoc2020::input_file(5).unwrap()).unwrap();
+        // Do IO
+        let input = include_str!("../inputs/day_05.txt");
 
-        let res = _part_2_one_pass(&seats);
+        let res = _part_2_one_pass(&input);
         assert_eq!(part_2_naive(seats).unwrap(), res)
     }
 
     #[bench]
     fn bench_part_2_one_pass(b: &mut Bencher) {
-        let seats = parse(aoc2020::input_file(5).unwrap()).unwrap();
+        // Do IO
+        let input = include_str!("../inputs/day_05.txt");
 
-        b.iter(|| _part_2_one_pass(&seats));
+        b.iter(|| _part_2_one_pass(&input));
     }
 }
