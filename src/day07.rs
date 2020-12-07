@@ -58,12 +58,13 @@ fn parse(input: impl BufRead) -> io::Result<Rules> {
 fn part_1(rules: &Rules) -> usize {
     let shiny = ("shiny".to_string(), "gold".to_string());
 
-    let mut outers: HashMap<Bag, Vec<Bag>> = HashMap::new();
+    // Map from a bag to the bags that could be wrapping it
+    let mut outers: HashMap<&Bag, Vec<&Bag>> = HashMap::new();
 
     for (outer, v) in rules {
-        for inner in v.keys().cloned() {
+        for inner in v.keys() {
             let entry = outers.entry(inner).or_insert(Vec::new());
-            entry.push(outer.clone());
+            entry.push(outer);
         }
     }
 
@@ -93,30 +94,30 @@ fn part_2(rules: &Rules) -> usize {
         let inside = rules.get(bag).unwrap();
 
         if inside.is_empty() {
-            contains.insert(bag, 1);
+            contains.insert(bag, 0);
         } else {
             let mut known = true;
             let mut count = 0;
 
             for (e, c) in inside {
                 if let Some(o) = contains.get(e) {
-                    count += c * o;
+                    count += c * (o + 1);
                 } else {
                     known = false;
                 }
             }
 
             if known {
-                contains.insert(bag, count + 1);
+                contains.insert(bag, count);
             } else {
-                to_visit.push_front(bag); // Need to re-visit
+                to_visit.push_front(bag); // Need to re-visit bag
             }
         }
     }
 
     let shiny = ("shiny".to_string(), "gold".to_string());
 
-    *contains.get(&shiny).unwrap() - 1 // don't count the shiny bag itself
+    *contains.get(&shiny).unwrap()
 }
 
 #[cfg(test)]
@@ -152,8 +153,12 @@ mod tests {
 
     #[bench]
     fn part_2_bench(b: &mut Bencher) {
-        let rules = parse(io::Cursor::new(EXAMPLE)).unwrap();
+        let input = include_str!("../inputs/day_07.txt");
+        let input = io::Cursor::new(input);
 
-        b.iter(|| part_2(&rules));
+        b.iter(|| {
+            let rules = parse(input.clone()).unwrap();
+            part_2(&rules)
+        });
     }
 }
