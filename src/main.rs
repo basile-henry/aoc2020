@@ -18,6 +18,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day08;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "aoc2020", about = "Basile's Advent of Code 2020")]
@@ -46,6 +47,7 @@ fn main() -> io::Result<()> {
         5 => day05::solve(input, opt.part)?,
         6 => day06::solve(input, opt.part)?,
         7 => day07::solve(input, opt.part)?,
+        8 => day08::solve(input, opt.part)?,
         _ => unimplemented!(),
     }
 
