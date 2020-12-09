@@ -1,7 +1,6 @@
 use std::io;
 use std::io::prelude::*;
 
-use std::cmp::Ordering;
 use std::collections::VecDeque;
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
@@ -30,55 +29,7 @@ fn parse(input: impl BufRead) -> Vec<u64> {
 struct CipherCheck {
     preamble: VecDeque<u64>,
     preamble_size: usize,
-    working_set: SortedVec<u64>, // Avoid allocations in the main loop
-}
-
-#[derive(Debug)]
-struct SortedVec<T>(Vec<T>);
-
-impl<T: Ord> SortedVec<T> {
-    fn with_capacity(capacity: usize) -> Self {
-        Self(Vec::with_capacity(capacity))
-    }
-
-    fn clear(&mut self) {
-        self.0.clear()
-    }
-
-    /// Find the index where x should go / where x already is
-    fn find(&self, x: &T) -> usize {
-        let mut min = 0;
-        let mut max = self.0.len();
-
-        while max - min > 1 {
-            let mid = (max - min) / 2 + min;
-
-            match self.0[mid].cmp(x) {
-                Ordering::Less => {
-                    max = mid;
-                }
-                Ordering::Equal => return mid,
-                Ordering::Greater => {
-                    min = mid;
-                }
-            }
-        }
-
-        min
-    }
-
-    fn contains(&self, x: &T) -> bool {
-        if self.0.len() == 0 {
-            return false;
-        }
-        let idx = self.find(x);
-        self.0[idx] == *x
-    }
-
-    fn insert(&mut self, x: T) {
-        let idx = self.find(&x);
-        self.0.insert(idx, x);
-    }
+    working_set: Vec<u64>, // Avoid allocations in the main loop
 }
 
 impl CipherCheck {
@@ -86,7 +37,7 @@ impl CipherCheck {
         Self {
             preamble: VecDeque::with_capacity(preamble_size),
             preamble_size,
-            working_set: SortedVec::with_capacity(preamble_size),
+            working_set: Vec::with_capacity(preamble_size),
         }
     }
 
@@ -102,7 +53,7 @@ impl CipherCheck {
                 if self.working_set.contains(&(x - y)) {
                     return true;
                 } else {
-                    self.working_set.insert(y);
+                    self.working_set.push(y);
                 }
             }
         }
