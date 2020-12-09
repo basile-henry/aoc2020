@@ -163,6 +163,7 @@ impl From<std::str::Utf8Error> for Day8Error {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
 
     const EXAMPLE: &str = "nop +0
 acc +1
@@ -184,5 +185,12 @@ acc +6";
     fn part_2_example() {
         let instrs = parse(io::Cursor::new(EXAMPLE)).unwrap();
         assert_eq!(part_2(&instrs).unwrap(), 8);
+    }
+
+    #[bench]
+    fn bench_part_2(b: &mut Bencher) {
+        let instrs = parse(aoc2020::input_file(8).unwrap()).unwrap();
+
+        b.iter(|| part_2(&instrs));
     }
 }

@@ -101,7 +101,6 @@ mod tests {
     #[test]
     fn part_2_equiv() {
         let seats = parse(aoc2020::input_file(5).unwrap()).unwrap();
-        // Do IO
         let input = include_str!("../inputs/day_05.txt");
 
         let res = _part_2_one_pass(&input);
@@ -110,7 +109,6 @@ mod tests {
 
     #[bench]
     fn bench_part_2_one_pass(b: &mut Bencher) {
-        // Do IO
         let input = include_str!("../inputs/day_05.txt");
 
         b.iter(|| _part_2_one_pass(&input));
