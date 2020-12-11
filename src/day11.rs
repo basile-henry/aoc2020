@@ -115,7 +115,11 @@ impl Map {
         (map, change)
     }
 
-    fn count_occupied(&self) -> usize {
+    fn stable_count(&mut self, tolerance: u8, at_distance: bool) -> usize {
+        while let (new_map, true) = self.step(tolerance, at_distance) {
+            *self = new_map;
+        }
+
         self.0
             .iter()
             .map(|row| row.iter().filter(|c| **c == Cell::SeatOccupied).count())
@@ -124,19 +128,11 @@ impl Map {
 }
 
 fn part_1(mut map: Map) -> usize {
-    while let (new_map, true) = map.step(4, false) {
-        map = new_map;
-    }
-
-    map.count_occupied()
+    map.stable_count(4, false)
 }
 
 fn part_2(mut map: Map) -> usize {
-    while let (new_map, true) = map.step(5, true) {
-        map = new_map;
-    }
-
-    map.count_occupied()
+    map.stable_count(5, true)
 }
 
 #[cfg(test)]
