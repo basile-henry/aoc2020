@@ -47,17 +47,16 @@ fn part_2(mut adapters: Vec<usize>) -> usize {
 
     let device = adapters.last().unwrap() + 3;
 
-    let initial_state = vec![(1, device)]; // 1 way to connect the device to the device (DONE)
+    let initial_state = vec![(1, 0)];
 
     adapters
         .iter()
-        .rev()
-        .chain(std::iter::once(&0))
+        .chain(std::iter::once(&device))
         .fold(initial_state, |mut conns, &x| {
             let mut count = 0;
 
             for (conn, adapter) in &conns {
-                if adapter - x <= 3 {
+                if x - adapter <= 3 {
                     count += conn;
                 }
             }
