@@ -87,9 +87,9 @@ impl<T> Insertable for VecMap<T> {
             self.0.push(None);
         }
 
-        let out = self.0[k].take();
-        self.0[k] = Some(x);
-        out
+        let mut x = Some(x);
+        std::mem::swap(&mut x, &mut self.0[k]);
+        x
     }
 }
 
@@ -104,23 +104,24 @@ impl<T> FromIterator<(usize, T)> for VecMap<T> {
     }
 }
 
-struct SizedMap<T, const N: usize>([Option<T>; N]);
+struct SizedMap<T, const N: usize>(Box<[Option<T>]>);
 
 impl<T, const N: usize> Insertable for SizedMap<T, N> {
     type Key = usize;
     type Item = T;
 
     fn insert(&mut self, k: usize, x: T) -> Option<T> {
-        let k = k % N; // ¯\_(ツ)_/¯
-        let out = self.0[k].take();
-        self.0[k] = Some(x);
-        out
+        // Will panic when out of bound ¯\_(ツ)_/¯
+
+        let mut x = Some(x);
+        std::mem::swap(&mut x, &mut self.0[k]);
+        x
     }
 }
 
-impl<T: Copy, const N: usize> FromIterator<(usize, T)> for SizedMap<T, N> {
+impl<T: Clone, const N: usize> FromIterator<(usize, T)> for SizedMap<T, N> {
     fn from_iter<I: IntoIterator<Item = (usize, T)>>(iter: I) -> Self {
-        let mut map = Self([None; N]);
+        let mut map = Self(vec![None; N].into_boxed_slice());
         for (i, x) in iter {
             map.insert(i, x);
         }
@@ -166,16 +167,16 @@ mod tests {
 
     #[bench]
     fn bench_hash_map(b: &mut Bencher) {
-        b.iter(|| simulate_to::<HashMap<usize, usize>>(2020, &[3, 1, 2]));
+        b.iter(|| simulate_to::<HashMap<usize, usize>>(10_000, &[0, 3, 6]));
     }
 
     #[bench]
     fn bench_vec_map(b: &mut Bencher) {
-        b.iter(|| simulate_to::<VecMap<usize>>(2020, &[3, 1, 2]));
+        b.iter(|| simulate_to::<VecMap<usize>>(10_000, &[0, 3, 6]));
     }
 
     #[bench]
     fn bench_size_map(b: &mut Bencher) {
-        b.iter(|| simulate_to::<SizedMap<usize, 2048>>(2020, &[3, 1, 2]));
+        b.iter(|| simulate_to::<SizedMap<usize, 10_000>>(10_000, &[0, 3, 6]));
     }
 }
