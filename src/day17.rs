@@ -2,7 +2,7 @@ use std::io;
 use std::io::prelude::*;
 use std::ops::Add;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     let solution = match part {
@@ -23,26 +23,6 @@ struct Pos<const N: usize>([isize; N]); // x, y, z, w
 impl<const N: usize> Pos<N> {
     fn repeated(x: isize) -> Self {
         Self([x; N])
-    }
-
-    fn min(&self, other: &Self) -> Self {
-        let mut pos = [0; N];
-
-        for (i, s) in self.0.iter().enumerate() {
-            pos[i] = *s.min(&other.0[i]);
-        }
-
-        Self(pos)
-    }
-
-    fn max(&self, other: &Self) -> Self {
-        let mut pos = [0; N];
-
-        for (i, s) in self.0.iter().enumerate() {
-            pos[i] = *s.max(&other.0[i]);
-        }
-
-        Self(pos)
     }
 }
 
@@ -102,8 +82,6 @@ impl<const N: usize> Iterator for PosRange<N> {
 #[derive(Debug)]
 struct Grid<const N: usize> {
     grid: HashSet<Pos<N>>, // Only the active cells
-    min_bound: Pos<N>,
-    max_bound: Pos<N>,
 }
 
 impl<const N: usize> Grid<N> {
@@ -111,7 +89,7 @@ impl<const N: usize> Grid<N> {
         let mut input_str = String::new();
         input.read_to_string(&mut input_str).unwrap();
 
-        let raw_grid: Vec<Pos<N>> = input_str
+        let grid = input_str
             .lines()
             .enumerate()
             .flat_map(|(y, l)| {
@@ -128,63 +106,33 @@ impl<const N: usize> Grid<N> {
             })
             .collect();
 
-        let max_bound = raw_grid.last().unwrap().clone();
-        let grid = raw_grid.into_iter().collect();
-
-        Grid {
-            grid,
-            min_bound: Pos::repeated(0),
-            max_bound,
-        }
+        Grid { grid }
     }
 
-    fn neighbours_count(&self, pos: &Pos<N>) -> usize {
-        let mut count = 0;
-        let zero = Pos::repeated(0);
-        let iter = PosRange::new(&Pos::repeated(-1), &Pos::repeated(1));
+    fn step(&self) -> Self {
+        let mut neighbours = HashMap::<Pos<N>, (bool, usize)>::new();
 
-        for dpos in iter {
-            if dpos != zero {
-                let active = self.grid.contains(&(dpos + pos));
-                if active {
-                    count += 1;
+        for pos in self.grid.iter() {
+            for dpos in PosRange::new(&Pos::repeated(-1), &Pos::repeated(1)) {
+                let is_current = dpos == Pos::repeated(0);
+
+                let entry = neighbours.entry(dpos + pos).or_insert((false, 0));
+
+                if !is_current {
+                    (*entry).1 += 1;
+                } else {
+                    (*entry).0 = true; // is active
                 }
             }
         }
 
-        count
-    }
+        let grid = neighbours
+            .into_iter()
+            .filter(|(_, (active, count))| *count == 3 || (*active && *count == 2))
+            .map(|(p, _)| p)
+            .collect();
 
-    fn step(&self) -> Self {
-        let mut grid = HashSet::new();
-        let mut min_bound = Pos::repeated(0);
-        let mut max_bound = Pos::repeated(0);
-
-        let pos_min_one = Pos::repeated(-1);
-        let pos_plus_one = Pos::repeated(1);
-        let pos_range = PosRange::new(
-            &(pos_min_one + &self.min_bound),
-            &(pos_plus_one + &self.max_bound),
-        );
-
-        for pos in pos_range {
-            let active = self.grid.contains(&pos);
-            let count = self.neighbours_count(&pos);
-
-            let new_active = count == 3 || (active && count == 2);
-
-            if new_active {
-                min_bound = min_bound.min(&pos);
-                max_bound = max_bound.max(&pos);
-                grid.insert(pos);
-            }
-        }
-
-        Grid {
-            grid,
-            min_bound,
-            max_bound,
-        }
+        Grid { grid }
     }
 
     fn run_steps(&mut self, steps: usize) {
