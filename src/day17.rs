@@ -46,10 +46,10 @@ impl<const N: usize> Pos<N> {
     }
 }
 
-impl<const N: usize> Add for Pos<N> {
+impl<const N: usize> Add<&Pos<N>> for Pos<N> {
     type Output = Self;
 
-    fn add(self, other: Self) -> Self {
+    fn add(self, other: &Pos<N>) -> Self {
         let mut pos = [0; N];
 
         for (i, pos) in pos.iter_mut().enumerate() {
@@ -145,7 +145,7 @@ impl<const N: usize> Grid<N> {
 
         for dpos in iter {
             if dpos != zero {
-                let active = self.grid.contains(&(pos.clone() + dpos));
+                let active = self.grid.contains(&(dpos + pos));
                 if active {
                     count += 1;
                 }
@@ -163,8 +163,8 @@ impl<const N: usize> Grid<N> {
         let pos_min_one = Pos::repeated(-1);
         let pos_plus_one = Pos::repeated(1);
         let pos_range = PosRange::new(
-            &(self.min_bound.clone() + pos_min_one),
-            &(self.max_bound.clone() + pos_plus_one),
+            &(pos_min_one + &self.min_bound),
+            &(pos_plus_one + &self.max_bound),
         );
 
         for pos in pos_range {
